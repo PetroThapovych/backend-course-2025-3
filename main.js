@@ -1,96 +1,62 @@
-#!/usr/bin/env node
-import { Command } from 'commander';
-import fs from 'fs';
+const { Command } = require('commander');
+const fs = require('fs');
 
 const program = new Command();
 
 program
     .requiredOption('-i, --input <path>', 'шлях до файлу для читання')
     .option('-o, --output <path>', 'шлях до файлу для запису результату')
-    .option('-d, --display', 'вивести результат у консоль');
+    .option('-d, --display', 'вивести результат у консоль')
+    .option('-f, --furnished', 'відображати лише будинки з меблями')
+    .option('-p, --price <number>', 'відображати лише будинки з ціною меншою за зазначену', parseFloat);
 
 program.parse(process.argv);
 
 const options = program.opts();
 
-// Перевірка наявності обов’язкового параметра
-if (!options.input) {
-    console.error("Please, specify input file");
-    process.exit(1);
-}
-
-// Перевірка існування файлу для читання
+// Перевірка наявності файлу
 if (!fs.existsSync(options.input)) {
     console.error("Cannot find input file");
     process.exit(1);
 }
 
-// Читання даних з файлу
-const data = fs.readFileSync(options.input, 'utf8');
-let result;
-
+// Читаємо файл
+let data;
 try {
-    const jsonData = JSON.parse(data);
-    result = JSON.stringify(jsonData, null, 2);
+    data = fs.readFileSync(options.input, 'utf8');
+} catch (err) {
+    console.error("Error reading file:", err.message);
+    process.exit(1);
+}
+
+// Парсимо JSON
+let jsonData;
+try {
+    jsonData = JSON.parse(data);
 } catch (err) {
     console.error("Invalid JSON format");
     process.exit(1);
 }
 
-// Якщо задано параметр -o, записуємо у файл
+// Фільтруємо дані
+let filteredData = jsonData;
+
+if (options.furnished) {
+    filteredData = filteredData.filter(item => item.furnishingstatus && item.furnishingstatus.toLowerCase() === 'furnished');
+}
+
+if (options.price !== undefined) {
+    filteredData = filteredData.filter(item => item.price && Number(item.price) < options.price);
+}
+
+// Формуємо рядки для виводу (price та area)
+const outputData = filteredData.map(item => `${item.price} ${item.area}`).join('\n');
+
+// Записуємо у файл або виводимо у консоль
 if (options.output) {
-    fs.writeFileSync(options.output, result, 'utf8');
+    fs.writeFileSync(options.output, outputData, 'utf8');
 }
 
-// Якщо задано параметр -d, виводимо у консоль
 if (options.display) {
-    console.log(result);
-}
-#!/usr/bin / env node
-import { Command } from 'commander';
-import fs from 'fs';
-
-const program = new Command();
-
-program
-    .requiredOption('-i, --input <path>', 'шлях до файлу для читання')
-    .option('-o, --output <path>', 'шлях до файлу для запису результату')
-    .option('-d, --display', 'вивести результат у консоль');
-
-program.parse(process.argv);
-
-const options = program.opts();
-
-// Перевірка наявності обов’язкового параметра
-if (!options.input) {
-    console.error("Please, specify input file");
-    process.exit(1);
-}
-
-// Перевірка існування файлу для читання
-if (!fs.existsSync(options.input)) {
-    console.error("Cannot find input file");
-    process.exit(1);
-}
-
-// Читання даних з файлу
-const data = fs.readFileSync(options.input, 'utf8');
-let result;
-
-try {
-    const jsonData = JSON.parse(data);
-    result = JSON.stringify(jsonData, null, 2);
-} catch (err) {
-    console.error("Invalid JSON format");
-    process.exit(1);
-}
-
-// Якщо задано параметр -o, записуємо у файл
-if (options.output) {
-    fs.writeFileSync(options.output, result, 'utf8');
-}
-
-// Якщо задано параметр -d, виводимо у консоль
-if (options.display) {
-    console.log(result);
+    console.log(outputData);
 }
