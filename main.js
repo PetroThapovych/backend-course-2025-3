@@ -4,23 +4,20 @@ const fs = require('fs');
 const program = new Command();
 
 program
-    .requiredOption('-i, --input <path>', 'шлях до файлу для читання')
-    .option('-o, --output <path>', 'шлях до файлу для запису результату')
-    .option('-d, --display', 'вивести результат у консоль')
-    .option('-f, --furnished', 'відображати лише будинки з меблями')
-    .option('-p, --price <number>', 'відображати лише будинки з ціною меншою за зазначену', parseFloat);
+    .requiredOption('-i, --input <path>', 'С€Р»СЏС… РґРѕ С„Р°Р№Р»Сѓ РґР»СЏ С‡РёС‚Р°РЅРЅСЏ')
+    .option('-o, --output <path>', 'С€Р»СЏС… РґРѕ С„Р°Р№Р»Сѓ РґР»СЏ Р·Р°РїРёСЃСѓ СЂРµР·СѓР»СЊС‚Р°С‚Сѓ')
+    .option('-d, --display', 'РІРёРІРµСЃС‚Рё СЂРµР·СѓР»СЊС‚Р°С‚ Сѓ РєРѕРЅСЃРѕР»СЊ')
+    .option('-f, --furnished', 'РІС–РґРѕР±СЂР°Р¶Р°С‚Рё Р»РёС€Рµ Р±СѓРґРёРЅРєРё Р· РјРµР±Р»СЏРјРё')
+    .option('-p, --price <number>', 'РІС–РґРѕР±СЂР°Р¶Р°С‚Рё Р»РёС€Рµ Р±СѓРґРёРЅРєРё Р· С†С–РЅРѕСЋ РјРµРЅС€РѕСЋ Р·Р° Р·Р°Р·РЅР°С‡РµРЅСѓ', parseFloat);
 
 program.parse(process.argv);
-
 const options = program.opts();
 
-// Перевірка наявності файлу
 if (!fs.existsSync(options.input)) {
     console.error("Cannot find input file");
     process.exit(1);
 }
 
-// Читаємо файл
 let data;
 try {
     data = fs.readFileSync(options.input, 'utf8');
@@ -29,7 +26,6 @@ try {
     process.exit(1);
 }
 
-// Парсимо JSON
 let jsonData;
 try {
     jsonData = JSON.parse(data);
@@ -38,7 +34,6 @@ try {
     process.exit(1);
 }
 
-// Фільтруємо дані
 let filteredData = jsonData;
 
 if (options.furnished) {
@@ -49,10 +44,9 @@ if (options.price !== undefined) {
     filteredData = filteredData.filter(item => item.price && Number(item.price) < options.price);
 }
 
-// Формуємо рядки для виводу (price та area)
+
 const outputData = filteredData.map(item => `${item.price} ${item.area}`).join('\n');
 
-// Записуємо у файл або виводимо у консоль
 if (options.output) {
     fs.writeFileSync(options.output, outputData, 'utf8');
 }
