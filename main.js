@@ -19,7 +19,21 @@ if (!fs.existsSync(options.input)) {
 }
 
 let data;
+try {
+    data = fs.readFileSync(options.input, 'utf8');
+} catch (err) {
+    console.error("Error reading file:", err.message);
+    process.exit(1);
+}
+
 let jsonData;
+try {
+    jsonData = JSON.parse(data);
+} catch (err) {
+    console.error("Invalid JSON format");
+    process.exit(1);
+}
+
 let filteredData = jsonData;
 
 if (options.furnished) {
