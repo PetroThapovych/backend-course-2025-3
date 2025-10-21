@@ -30,8 +30,10 @@ if (options.price !== undefined) {
     filteredData = filteredData.filter(item => item.price && Number(item.price) < options.price);
 }
 
-
-const outputData = filteredData.map(item => `${item.price} ${item.area}`).join('\n');
+let outputData = "";
+for (let item of filteredData) {
+    outputData += item.price + " " + item.area + "\n";
+}
 
 if (options.output) {
     fs.writeFileSync(options.output, outputData, 'utf8');
